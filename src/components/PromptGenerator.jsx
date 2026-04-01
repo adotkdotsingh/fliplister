@@ -12,15 +12,15 @@ const REQUIRED_FIELDS = [
     "Type",
 ]
 
-export default function PromptGenerator({ formData }) {
+export default function PromptGenerator({ formData, category }) {
     const [prompt, setPrompt] = useState("")
     const [copied, setCopied] = useState(false)
 
-    const missingForPrompt = REQUIRED_FIELDS.filter(
-        f => !formData[f] || formData[f].trim() === ""
-    )
+    // const missingForPrompt = REQUIRED_FIELDS.filter(
+    //     f => !formData[f] || formData[f].trim() === ""
+    // )
 
-    const canGenerate = missingForPrompt.length === 0
+    // const canGenerate = missingForPrompt.length === 0
 
     function handleGenerate() {
         const brand = formData["Manufacturer Name"]
@@ -31,10 +31,11 @@ export default function PromptGenerator({ formData }) {
         const qty = formData["Net Quantity (N)"]
         const type = formData["Type"]
 
-        const generated = `Generate a Meesho product listing title and description using the details below. The title should be under 130 characters, catchy, and include key product details. The description should be 3-5 sentences, highlight the product features, and be written in simple English suitable for Indian online shoppers.
+        const generated = `Generate a Meesho product listing title and description using the details below. The title should be under 130 characters, catchy, and include key product details. Ignore details which are undefined. The description should be 3-5 sentences, highlight the product features, and be written in simple English suitable for Indian online shoppers.
 
 Product Details:
 - Brand / Firm Name: ${brand}
+- Category: ${category || ""}
 - Type: ${type}
 - Capacity: ${capacity} ${unit}
 - Color: ${color}
@@ -63,7 +64,7 @@ Description: [generated description here]`
             <CardContent className="flex flex-col gap-4">
 
                 {/* Missing fields warning */}
-                {!canGenerate && (
+                {/* {!canGenerate && (
                     <div className="bg-amber-50 border border-amber-200 text-amber-700 text-sm px-4 py-3 rounded-lg">
                         <p className="font-medium mb-1">
                             Fill these fields first to generate prompt:
@@ -74,11 +75,10 @@ Description: [generated description here]`
                             ))}
                         </ul>
                     </div>
-                )}
+                )} */}
 
                 <Button
                     variant="outline"
-                    disabled={!canGenerate}
                     onClick={handleGenerate}
                 >
                     ✨ Generate AI Prompt

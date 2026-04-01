@@ -183,7 +183,7 @@ export default function App() {
                 />
               </CardContent>
             </Card>
-            <PromptGenerator formData={formData} /> //new
+            <PromptGenerator formData={formData} category={category} />
           </>
         )}
 

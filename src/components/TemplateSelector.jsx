@@ -17,7 +17,7 @@ export default function TemplateSelector({ category, supplier, onChange }) {
                         onChange={e => onChange("category", e.target.value)}
                         className="border border-neutral-300 dark:border-neutral-600 rounded-md px-3 py-2 text-sm bg-white dark:bg-neutral-700 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-neutral-400"
                     >
-                        <option value="">-- Select Category --</option>
+                        <option value="">Select Category</option>
                         {CATEGORIES.map(c => (
                             <option key={c} value={c}>{c}</option>
                         ))}
@@ -33,7 +33,7 @@ export default function TemplateSelector({ category, supplier, onChange }) {
                         onChange={e => onChange("supplier", e.target.value)}
                         className="border border-neutral-300 dark:border-neutral-600 rounded-md px-3 py-2 text-sm bg-white dark:bg-neutral-700 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-neutral-400"
                     >
-                        <option value="">-- Select Supplier --</option>
+                        <option value="">Select Supplier</option>
                         {SUPPLIERS.map(s => (
                             <option key={s} value={s}>{s}</option>
                         ))}

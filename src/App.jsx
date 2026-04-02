@@ -1,37 +1,42 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { Button } from "@/components/ui/button"
 import FileUpload from "@/components/FileUpload"
 import TemplateSelector from "@/components/TemplateSelector"
 import DynamicForm from "@/components/DynamicForm"
+import PromptGenerator from "@/components/PromptGenerator"
+import PriceCalculator from "@/components/PriceCalculator"
 import { parseExcelFile } from "@/lib/excelParser"
 import { generateExcel } from "@/lib/excelWriter"
-import { getAutoFillData } from "@/data/templates"
-import PromptGenerator from "@/components/PromptGenerator"
+import { getAutoFillData, getCategoryPricing } from "@/data/templates"
+
+const ALWAYS_OPTIONAL = ["Importer Name", "Importer Address", "Importer Pincode"]
 
 export default function App() {
-  // excel state
   const [workbook, setWorkbook] = useState(null)
   const [fillSheet, setFillSheet] = useState(null)
   const [headers, setHeaders] = useState([])
   const [fieldTypes, setFieldTypes] = useState({})
   const [dropdowns, setDropdowns] = useState({})
 
-  // form state
   const [formData, setFormData] = useState({})
   const [category, setCategory] = useState("")
   const [supplier, setSupplier] = useState("")
+  const [categoryPricing, setCategoryPricing] = useState(null)
 
-  // ui state
   const [isParsing, setIsParsing] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
-  const [fileName, setFileName] = useState("")
   const [error, setError] = useState("")
+  const [isDark, setIsDark] = useState(false)
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", isDark)
+  }, [isDark])
 
   async function handleFileSelect(file) {
     setIsParsing(true)
     setError("")
-    setFileName(file.name)
 
     try {
       const result = await parseExcelFile(file)
@@ -40,11 +45,7 @@ export default function App() {
       setHeaders(result.validHeaders)
       setFieldTypes(result.fieldTypes)
       setDropdowns(result.dropdowns)
-
-      // apply defaults immediately
-      const defaults = getAutoFillData("", "")
-      setFormData(defaults)
-
+      setFormData(getAutoFillData("", ""))
     } catch (err) {
       console.error(err)
       setError("Could not read file. Make sure it's a valid Meesho template.")
@@ -60,33 +61,24 @@ export default function App() {
     const newCategory = field === "category" ? value : category
     const newSupplier = field === "supplier" ? value : supplier
 
-    // merge autofill over existing form data
     const autoFill = getAutoFillData(newCategory, newSupplier)
     setFormData(prev => ({ ...prev, ...autoFill }))
+
+    if (field === "category") {
+      setCategoryPricing(getCategoryPricing(value))
+    }
   }
 
   function handleFieldChange(name, value) {
     setFormData(prev => {
       const updated = { ...prev, [name]: value }
 
-      // Rule 1 — auto calc return price
       if (name === "Meesho Price") {
         const price = parseFloat(value)
         updated["Wrong/Defective Returns Price"] = isNaN(price)
           ? ""
           : String(price - 18)
-      }
-
-      // Rule 2 - auto update mrp based on meesho price
-      if (name === "Meesho Price") {
-        const price = Number(value)
-
-        updated["MRP"] =
-          price >= 399
-            ? "999"
-            : price < 399
-              ? "499"
-              : ""
+        updated["MRP"] = price >= 399 ? "999" : "499"
       }
 
       return updated
@@ -108,83 +100,143 @@ export default function App() {
   }
 
   const hasFile = headers.length > 0
+  const compulsoryCount = headers.filter(h => fieldTypes[h.name] === "compulsory").length
 
-  // new column
   const missingFields = headers
     .filter(h => fieldTypes[h.name] === "compulsory")
+    .filter(h => !ALWAYS_OPTIONAL.includes(h.name))
     .filter(h => !formData[h.name] || formData[h.name].trim() === "")
     .map(h => h.name)
 
   const isFormValid = missingFields.length === 0
 
-
   return (
-    <div className="min-h-screen bg-neutral-100 p-6">
+    <div className="min-h-screen bg-neutral-100 dark:bg-neutral-900 p-6 transition-colors">
 
       {/* Header */}
-      <div className="max-w-5xl mx-auto">
-        <h1 className="text-2xl font-semibold text-neutral-800">
-          Meesho Listing Tool
-        </h1>
-        <p className="text-neutral-500 text-sm mt-1">
-          Upload a Meesho Excel template, fill in product details and generate.
-        </p>
-        <Separator className="mt-4 mb-6" />
+      <div className="max-w-6xl mx-auto">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-neutral-800 dark:text-neutral-100">
+              Meesho Listing Tool
+            </h1>
+            <p className="text-neutral-500 dark:text-neutral-400 text-sm mt-1">
+              Upload a Meesho Excel template, fill in product details and generate.
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => setIsDark(prev => !prev)}
+            className="dark:border-neutral-600 dark:text-neutral-200 dark:hover:bg-neutral-700"
+          >
+            {isDark ? "☀️ Light" : "🌙 Dark"}
+          </Button>
+        </div>
+        <Separator className="mt-4 mb-6 dark:bg-neutral-700" />
       </div>
 
-      <div className="max-w-5xl mx-auto flex flex-col gap-6">
+      <div className="max-w-6xl mx-auto flex flex-col gap-6">
 
-        {/* Upload */}
-        <FileUpload
-          onFileSelect={handleFileSelect}
-          isLoading={isParsing}
-        />
+        {!hasFile && (
+          <FileUpload
+            onFileSelect={handleFileSelect}
+            isLoading={isParsing}
+          />
+        )}
 
-        {/* Error */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-lg">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm px-4 py-3 rounded-lg">
             {error}
           </div>
         )}
 
-        {/* File name confirmation */}
-        {fileName && !error && (
-          <div className="bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded-lg">
-            ✅ Loaded: <span className="font-medium">{fileName}</span>
-          </div>
-        )}
-
-        {/* Template Selector + Form */}
         {hasFile && (
-          <>
-            <TemplateSelector
-              category={category}
-              supplier={supplier}
-              onChange={handleTemplateChange}
-            />
+          <div className="flex gap-6 items-start">
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">
-                  Product Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <DynamicForm
-                  headers={headers}
-                  fieldTypes={fieldTypes}
-                  dropdowns={dropdowns}
-                  formData={formData}
-                  onChange={handleFieldChange}
-                  onSubmit={handleGenerate}
-                  isGenerating={isGenerating}
-                  isFormValid={isFormValid}  // new 
-                  missingFields={missingFields} //new
-                />
-              </CardContent>
-            </Card>
-            <PromptGenerator formData={formData} category={category} />
-          </>
+            {/* Left column - main content */}
+            <div className="flex flex-col gap-6 flex-1 min-w-0">
+              <TemplateSelector
+                category={category}
+                supplier={supplier}
+                onChange={handleTemplateChange}
+              />
+
+              <PriceCalculator
+                initialCosts={categoryPricing}
+                onPriceConfirm={(price) => handleFieldChange("Meesho Price", price)}
+              />
+
+              <Card className="dark:bg-neutral-800 dark:border-neutral-700">
+                <CardHeader>
+                  <CardTitle className="text-base dark:text-neutral-100">
+                    Product Details
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <DynamicForm
+                    headers={headers}
+                    fieldTypes={fieldTypes}
+                    dropdowns={dropdowns}
+                    formData={formData}
+                    onChange={handleFieldChange}
+                    onSubmit={handleGenerate}
+                    isGenerating={isGenerating}
+                    isFormValid={isFormValid}
+                    missingFields={missingFields}
+                  />
+                </CardContent>
+              </Card>
+
+              <PromptGenerator formData={formData} category={category} />
+            </div>
+
+            {/* Right column - required fields tracker */}
+            <div className="w-64 shrink-0">
+              <div className="sticky top-6 flex flex-col gap-3">
+                {!isFormValid ? (
+                  <div className="bg-white dark:bg-neutral-800 border border-red-200 dark:border-red-800 rounded-xl shadow-sm p-4">
+                    <p className="text-sm font-semibold text-red-600 dark:text-red-400 mb-2">
+                      ⚠️ Required fields missing:
+                    </p>
+                    <ul className="flex flex-col gap-1 mb-3">
+                      {missingFields.map(f => (
+                        <li
+                          key={f}
+                          className="text-xs text-red-500 dark:text-red-400 flex items-start gap-1"
+                        >
+                          <span className="mt-0.5">•</span>
+                          <span>{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    {/* Progress bar */}
+                    <div className="h-1.5 rounded-full bg-red-100 dark:bg-neutral-700">
+                      <div
+                        className="h-1.5 rounded-full bg-red-400 dark:bg-red-500 transition-all duration-500"
+                        style={{
+                          width: `${((compulsoryCount - missingFields.length) / compulsoryCount) * 100}%`
+                        }}
+                      />
+                    </div>
+                    <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1 text-right">
+                      {compulsoryCount - missingFields.length}/{compulsoryCount} filled
+                    </p>
+                  </div>
+                ) : (
+                  <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4">
+                    <p className="text-sm font-semibold text-green-600 dark:text-green-400">
+                      ✅ All required fields filled!
+                    </p>
+                    <p className="text-xs text-green-500 dark:text-green-500 mt-1">
+                      You can now generate the Excel file.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+          </div>
         )}
 
       </div>

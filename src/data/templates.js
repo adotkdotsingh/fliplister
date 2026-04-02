@@ -32,6 +32,14 @@ export const categoryTemplates = {
         "Product Weight": "0.1",
         "Product Weight Unit": "Kg",
         "Material": "Ceramic",
+        // ✅ ADD THIS
+        pricing: {
+            productCost: 0,
+            packingCost: 10,
+            adCost: 15,
+            returnCost: 5,
+            marginCost: 20,
+        },
     },
     Mugs: {
         "Generic Name": "Mug",
@@ -57,7 +65,6 @@ export const supplierTemplates = {
         "Packer Name": "M/S Shivi Ceramics",
         "Packer Address": "G.T Road Khurja",
         "Packer Pincode": "203131",
-        "Brand": "CLAYBENDER",
 
     },
     Jayas: {
@@ -76,4 +83,14 @@ export function getAutoFillData(category, supplier) {
         ...(categoryTemplates[category] || {}),
         ...(supplierTemplates[supplier] || {}),
     };
+}
+
+export function getCategoryPricing(category) {
+    return categoryTemplates[category]?.pricing || {
+        productCost: 0,
+        packingCost: 0,
+        adCost: 0,
+        returnCost: 0,
+        marginCost: 0,
+    }
 }

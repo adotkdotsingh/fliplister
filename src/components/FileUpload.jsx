@@ -1,36 +1,36 @@
-import { useRef } from "react";
-import { Button } from "@/components/ui/button";
+import { useRef } from "react"
+import { Button } from "@/components/ui/button"
 
 export default function FileUpload({ onFileSelect, isLoading }) {
-    const inputRef = useRef(null);
+    const inputRef = useRef(null)
 
     function handleFileChange(e) {
-        const file = e.target.files[0];
-        if (file) onFileSelect(file);
+        const file = e.target.files[0]
+        if (file) onFileSelect(file)
     }
 
     function handleDrop(e) {
-        e.preventDefault();
-        const file = e.dataTransfer.files[0];
-        if (file) onFileSelect(file);
+        e.preventDefault()
+        const file = e.dataTransfer.files[0]
+        if (file) onFileSelect(file)
     }
 
     function handleDragOver(e) {
-        e.preventDefault();
+        e.preventDefault()
     }
 
     return (
         <div
             onDrop={handleDrop}
             onDragOver={handleDragOver}
-            className="border-2 border-dashed border-neutral-300 rounded-xl p-10 flex flex-col items-center justify-center gap-4 bg-white hover:border-neutral-400 transition-colors"
+            className="border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-xl p-10 flex flex-col items-center justify-center gap-4 bg-white dark:bg-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-500 transition-colors"
         >
             <div className="text-4xl">📊</div>
             <div className="text-center">
-                <p className="text-neutral-700 font-medium">
+                <p className="text-neutral-700 dark:text-neutral-200 font-medium">
                     Drag & drop your Meesho Excel file here
                 </p>
-                <p className="text-neutral-400 text-sm mt-1">
+                <p className="text-neutral-400 dark:text-neutral-500 text-sm mt-1">
                     Supports .xlsx files only
                 </p>
             </div>
@@ -39,6 +39,7 @@ export default function FileUpload({ onFileSelect, isLoading }) {
                 variant="outline"
                 disabled={isLoading}
                 onClick={() => inputRef.current.click()}
+                className="dark:border-neutral-600 dark:text-neutral-200 dark:hover:bg-neutral-700"
             >
                 {isLoading ? "Reading file..." : "Browse File"}
             </Button>
@@ -51,5 +52,5 @@ export default function FileUpload({ onFileSelect, isLoading }) {
                 onChange={handleFileChange}
             />
         </div>
-    );
+    )
 }

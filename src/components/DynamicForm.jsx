@@ -88,6 +88,37 @@ export default function DynamicForm({
                 </div>
             )}
 
+            {/* Missing fields warning */}
+            {!isFormValid && missingFields.length > 0 && (
+                <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
+                    <p className="text-sm font-semibold text-amber-700 dark:text-amber-400 mb-2">
+                        ⚠️ Please fill in these required fields:
+                    </p>
+                    <ul className="flex flex-col gap-1 mb-3">
+                        {missingFields.map(f => (
+                            <li
+                                key={f}
+                                className="text-xs text-amber-600 dark:text-amber-400 flex items-start gap-1"
+                            >
+                                <span className="mt-0.5">•</span>
+                                <span>{f}</span>
+                            </li>
+                        ))}
+                    </ul>
+                    <div className="h-1.5 rounded-full bg-amber-100 dark:bg-neutral-700">
+                        <div
+                            className="h-1.5 rounded-full bg-amber-400 dark:bg-amber-500 transition-all duration-500"
+                            style={{
+                                width: `${((compulsoryFields.length - missingFields.length) / compulsoryFields.length) * 100}%`
+                            }}
+                        />
+                    </div>
+                    <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1 text-right">
+                        {compulsoryFields.length - missingFields.length}/{compulsoryFields.length} filled
+                    </p>
+                </div>
+            )}
+
             <Button
                 onClick={onSubmit}
                 disabled={isGenerating || !isFormValid}

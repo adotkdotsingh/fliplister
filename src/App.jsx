@@ -24,6 +24,7 @@ export default function App() {
   const [category, setCategory] = useState("")
   const [supplier, setSupplier] = useState("")
   const [categoryPricing, setCategoryPricing] = useState(null)
+  const [fileName, setFileName] = useState("")
 
   const [isParsing, setIsParsing] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
@@ -37,6 +38,7 @@ export default function App() {
   async function handleFileSelect(file) {
     setIsParsing(true)
     setError("")
+    setFileName(file.name)
 
     try {
       const result = await parseExcelFile(file)
@@ -90,7 +92,7 @@ export default function App() {
     setIsGenerating(true)
 
     try {
-      await generateExcel(workbook, fillSheet, headers, formData)
+      await generateExcel(workbook, fillSheet, headers, formData, fileName)
     } catch (err) {
       console.error(err)
       setError("Failed to generate Excel. Please try again.")
@@ -100,7 +102,6 @@ export default function App() {
   }
 
   const hasFile = headers.length > 0
-  const compulsoryCount = headers.filter(h => fieldTypes[h.name] === "compulsory").length
 
   const missingFields = headers
     .filter(h => fieldTypes[h.name] === "compulsory")
@@ -114,7 +115,7 @@ export default function App() {
     <div className="min-h-screen bg-neutral-100 dark:bg-neutral-900 p-6 transition-colors">
 
       {/* Header */}
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-neutral-800 dark:text-neutral-100">
@@ -135,7 +136,7 @@ export default function App() {
         <Separator className="mt-4 mb-6 dark:bg-neutral-700" />
       </div>
 
-      <div className="max-w-6xl mx-auto flex flex-col gap-6">
+      <div className="max-w-5xl mx-auto flex flex-col gap-6">
 
         {!hasFile && (
           <FileUpload
@@ -151,92 +152,41 @@ export default function App() {
         )}
 
         {hasFile && (
-          <div className="flex gap-6 items-start">
+          <>
+            <TemplateSelector
+              category={category}
+              supplier={supplier}
+              onChange={handleTemplateChange}
+            />
 
-            {/* Left column - main content */}
-            <div className="flex flex-col gap-6 flex-1 min-w-0">
-              <TemplateSelector
-                category={category}
-                supplier={supplier}
-                onChange={handleTemplateChange}
-              />
+            <PriceCalculator
+              initialCosts={categoryPricing}
+              onPriceConfirm={(price) => handleFieldChange("Meesho Price", price)}
+            />
 
-              <PriceCalculator
-                initialCosts={categoryPricing}
-                onPriceConfirm={(price) => handleFieldChange("Meesho Price", price)}
-              />
+            <Card className="dark:bg-neutral-800 dark:border-neutral-700">
+              <CardHeader>
+                <CardTitle className="text-base dark:text-neutral-100">
+                  Product Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <DynamicForm
+                  headers={headers}
+                  fieldTypes={fieldTypes}
+                  dropdowns={dropdowns}
+                  formData={formData}
+                  onChange={handleFieldChange}
+                  onSubmit={handleGenerate}
+                  isGenerating={isGenerating}
+                  isFormValid={isFormValid}
+                  missingFields={missingFields}
+                />
+              </CardContent>
+            </Card>
 
-              <Card className="dark:bg-neutral-800 dark:border-neutral-700">
-                <CardHeader>
-                  <CardTitle className="text-base dark:text-neutral-100">
-                    Product Details
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <DynamicForm
-                    headers={headers}
-                    fieldTypes={fieldTypes}
-                    dropdowns={dropdowns}
-                    formData={formData}
-                    onChange={handleFieldChange}
-                    onSubmit={handleGenerate}
-                    isGenerating={isGenerating}
-                    isFormValid={isFormValid}
-                    missingFields={missingFields}
-                  />
-                </CardContent>
-              </Card>
-
-              <PromptGenerator formData={formData} category={category} />
-            </div>
-
-            {/* Right column - required fields tracker */}
-            <div className="w-64 shrink-0">
-              <div className="sticky top-6 flex flex-col gap-3">
-                {!isFormValid ? (
-                  <div className="bg-white dark:bg-neutral-800 border border-red-200 dark:border-red-800 rounded-xl shadow-sm p-4">
-                    <p className="text-sm font-semibold text-red-600 dark:text-red-400 mb-2">
-                      ⚠️ Required fields missing:
-                    </p>
-                    <ul className="flex flex-col gap-1 mb-3">
-                      {missingFields.map(f => (
-                        <li
-                          key={f}
-                          className="text-xs text-red-500 dark:text-red-400 flex items-start gap-1"
-                        >
-                          <span className="mt-0.5">•</span>
-                          <span>{f}</span>
-                        </li>
-                      ))}
-                    </ul>
-
-                    {/* Progress bar */}
-                    <div className="h-1.5 rounded-full bg-red-100 dark:bg-neutral-700">
-                      <div
-                        className="h-1.5 rounded-full bg-red-400 dark:bg-red-500 transition-all duration-500"
-                        style={{
-                          width: `${((compulsoryCount - missingFields.length) / compulsoryCount) * 100}%`
-                        }}
-                      />
-                    </div>
-                    <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1 text-right">
-                      {compulsoryCount - missingFields.length}/{compulsoryCount} filled
-                    </p>
-                  </div>
-                ) : (
-                  <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4">
-                    <p className="text-sm font-semibold text-green-600 dark:text-green-400">
-                      ✅ All required fields filled!
-                    </p>
-                    <p className="text-xs text-green-500 dark:text-green-500 mt-1">
-                      You can now generate the Excel file.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-          </div>
+            <PromptGenerator formData={formData} category={category} />
+          </>
         )}
 
       </div>

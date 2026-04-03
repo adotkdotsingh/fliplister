@@ -1,26 +1,30 @@
 import ExcelJS from "exceljs";
 
-export async function generateExcel(workbook, fillSheet, headers, formData) {
-
-    // find the next empty row starting from row 5
+export async function generateExcel(workbook, fillSheet, headers, listings) {
     let targetRow = 5;
-    while (fillSheet.getRow(targetRow).getCell(3).value) {
+
+    // Write each listing as a separate row
+    for (const formData of listings) {
+        // find the next empty row starting from current targetRow
+        while (fillSheet.getRow(targetRow).getCell(3).value) {
+            targetRow++;
+        }
+
+        console.log("Writing to row:", targetRow);
+
+        const row = fillSheet.getRow(targetRow);
+
+        // write each field value into the correct column
+        headers.forEach(({ name, colNumber }) => {
+            if (!formData[name]) return;
+
+            const cell = row.getCell(colNumber);
+            cell.value = formData[name];
+        });
+
+        row.commit();
         targetRow++;
     }
-
-    console.log("Writing to row:", targetRow);
-
-    const row = fillSheet.getRow(targetRow);
-
-    // write each field value into the correct column
-    headers.forEach(({ name, colNumber }) => {
-        if (!formData[name]) return;
-
-        const cell = row.getCell(colNumber);
-        cell.value = formData[name];
-    });
-
-    row.commit();
 
     // write workbook to buffer
     const buffer = await workbook.xlsx.writeBuffer();

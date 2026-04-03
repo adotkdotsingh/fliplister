@@ -7,8 +7,10 @@ import TemplateSelector from "@/components/TemplateSelector"
 import DynamicForm from "@/components/DynamicForm"
 import PromptGenerator from "@/components/PromptGenerator"
 import PriceCalculator from "@/components/PriceCalculator"
+import ListingTabs from "@/components/ListingTabs"
 import { parseExcelFile } from "@/lib/excelParser"
 import { generateExcel } from "@/lib/excelWriter"
+import { generatePDF } from "@/lib/pdfGenerator"
 import { getAutoFillData, getCategoryPricing } from "@/data/templates"
 
 const ALWAYS_OPTIONAL = ["Importer Name", "Importer Address", "Importer Pincode"]
@@ -20,7 +22,8 @@ export default function App() {
   const [fieldTypes, setFieldTypes] = useState({})
   const [dropdowns, setDropdowns] = useState({})
 
-  const [formData, setFormData] = useState({})
+  const [listings, setListings] = useState([{}])
+  const [activeListingIndex, setActiveListingIndex] = useState(0)
   const [category, setCategory] = useState("")
   const [supplier, setSupplier] = useState("")
   const [categoryPricing, setCategoryPricing] = useState(null)
@@ -29,7 +32,7 @@ export default function App() {
   const [isParsing, setIsParsing] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState("")
-  const [isDark, setIsDark] = useState(false)
+  const [isDark, setIsDark] = useState(true)
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", isDark)
@@ -47,7 +50,10 @@ export default function App() {
       setHeaders(result.validHeaders)
       setFieldTypes(result.fieldTypes)
       setDropdowns(result.dropdowns)
-      setFormData(getAutoFillData("", ""))
+      setListings([getAutoFillData("", "")])
+      setActiveListingIndex(0)
+      setCategory("")
+      setSupplier("")
     } catch (err) {
       console.error(err)
       setError("Could not read file. Make sure it's a valid Meesho template.")
@@ -64,7 +70,12 @@ export default function App() {
     const newSupplier = field === "supplier" ? value : supplier
 
     const autoFill = getAutoFillData(newCategory, newSupplier)
-    setFormData(prev => ({ ...prev, ...autoFill }))
+
+    setListings(prev => {
+      const updated = [...prev]
+      updated[activeListingIndex] = { ...updated[activeListingIndex], ...autoFill }
+      return updated
+    })
 
     if (field === "category") {
       setCategoryPricing(getCategoryPricing(value))
@@ -72,27 +83,59 @@ export default function App() {
   }
 
   function handleFieldChange(name, value) {
-    setFormData(prev => {
-      const updated = { ...prev, [name]: value }
+    setListings(prev => {
+      const updated = [...prev]
+      const currentListing = { ...updated[activeListingIndex], [name]: value }
 
       if (name === "Meesho Price") {
         const price = parseFloat(value)
-        updated["Wrong/Defective Returns Price"] = isNaN(price)
+        currentListing["Wrong/Defective Returns Price"] = isNaN(price)
           ? ""
           : String(price - 18)
-        updated["MRP"] = price >= 399 ? "999" : "499"
+        currentListing["MRP"] = price >= 399 ? "999" : "499"
       }
 
+      updated[activeListingIndex] = currentListing
       return updated
     })
   }
 
+  function handleAddListing() {
+    const newListing = getAutoFillData(category, supplier)
+    setListings(prev => [...prev, newListing])
+    setActiveListingIndex(listings.length)
+  }
+
+  function handleDeleteListing(index) {
+    if (listings.length === 1) return
+
+    setListings(prev => prev.filter((_, i) => i !== index))
+
+    if (activeListingIndex >= index && activeListingIndex > 0) {
+      setActiveListingIndex(activeListingIndex - 1)
+    }
+  }
+
   async function handleGenerate() {
     if (!workbook || !fillSheet) return
+
+    // Validate all listings
+    const allListingsValid = listings.every(listing =>
+      headers
+        .filter(h => fieldTypes[h.name] === "compulsory")
+        .filter(h => !ALWAYS_OPTIONAL.includes(h.name))
+        .every(h => listing[h.name] && listing[h.name].trim() !== "")
+    )
+
+    if (!allListingsValid) {
+      setError("Please fill all required fields in all listings before generating.")
+      return
+    }
+
     setIsGenerating(true)
 
     try {
-      await generateExcel(workbook, fillSheet, headers, formData, fileName)
+      await generateExcel(workbook, fillSheet, headers, listings)
     } catch (err) {
       console.error(err)
       setError("Failed to generate Excel. Please try again.")
@@ -101,12 +144,39 @@ export default function App() {
     }
   }
 
+  async function handleGeneratePDF() {
+    // Validate all listings
+    const allListingsValid = listings.every(listing =>
+      headers
+        .filter(h => fieldTypes[h.name] === "compulsory")
+        .filter(h => !ALWAYS_OPTIONAL.includes(h.name))
+        .every(h => listing[h.name] && listing[h.name].trim() !== "")
+    )
+
+    if (!allListingsValid) {
+      setError("Please fill all required fields in all listings before generating.")
+      return
+    }
+
+    setIsGenerating(true)
+
+    try {
+      await generatePDF(listings, headers, fieldTypes)
+    } catch (err) {
+      console.error(err)
+      setError("Failed to generate PDF. Please try again.")
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
   const hasFile = headers.length > 0
+  const activeListing = listings[activeListingIndex] || {}
 
   const missingFields = headers
     .filter(h => fieldTypes[h.name] === "compulsory")
     .filter(h => !ALWAYS_OPTIONAL.includes(h.name))
-    .filter(h => !formData[h.name] || formData[h.name].trim() === "")
+    .filter(h => !activeListing[h.name] || activeListing[h.name].trim() === "")
     .map(h => h.name)
 
   const isFormValid = missingFields.length === 0
@@ -153,6 +223,14 @@ export default function App() {
 
         {hasFile && (
           <>
+            <ListingTabs
+              listings={listings}
+              activeIndex={activeListingIndex}
+              onTabClick={setActiveListingIndex}
+              onAddTab={handleAddListing}
+              onDeleteTab={handleDeleteListing}
+            />
+
             <TemplateSelector
               category={category}
               supplier={supplier}
@@ -175,9 +253,10 @@ export default function App() {
                   headers={headers}
                   fieldTypes={fieldTypes}
                   dropdowns={dropdowns}
-                  formData={formData}
+                  formData={activeListing}
                   onChange={handleFieldChange}
                   onSubmit={handleGenerate}
+                  onPDFSubmit={handleGeneratePDF}
                   isGenerating={isGenerating}
                   isFormValid={isFormValid}
                   missingFields={missingFields}
@@ -185,7 +264,7 @@ export default function App() {
               </CardContent>
             </Card>
 
-            <PromptGenerator formData={formData} category={category} />
+            <PromptGenerator formData={activeListing} category={category} />
           </>
         )}
 

@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card"
 
-const CATEGORIES = ["Cups", "Mugs"]
-const SUPPLIERS = ["Mishika", "Shivi", "Jayas"]
+const CATEGORIES = ["Cups", "Mugs", "Bowls"]
+const SUPPLIERS = ["Mishika", "Shivi", "Jayas", "Khurja Crockery Store"]
 
 export default function TemplateSelector({ category, supplier, onChange }) {
     return (

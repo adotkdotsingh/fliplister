@@ -1,0 +1,223 @@
+export const commonDefaults = {
+    "Variation": "Free Size",
+    "GST %": "5",
+    "HSN ID": "691200",
+    "Inventory": "5",
+    "Country of Origin": "India",
+    "Material": "Ceramic",
+    "Net Quantity (N)": "1",
+    "Packaging Unit": "Cm",
+    "Packaging Weight Unit": "G",
+    "Product Unit": "Cm",
+    "Product Weight Unit": "G",
+};
+
+export const categoryTemplates = {
+    Cups: {
+        "Generic Name": "Cups, Mugs & Saucers",
+        "Type": "Tea Cup",
+        "Capacity": "150",
+        "Volume Unit": "ml",
+        "Net Weight (gms)": "600",
+        "Net Quantity (N)": "Pack Of 6",
+        "Packaging Breadth": "20",
+        "Packaging Height": "12",
+        "Packaging Length": "24",
+        "Packaging Unit": "Cm",
+        "Packaging Weight": "0.9",
+        "Packaging Weight Unit": "Kg",
+        "Product Breadth": "8",
+        "Product Height": "7",
+        "Product Length": "8",
+        "Product Unit": "Cm",
+        "Product Weight": "0.1",
+        "Product Weight Unit": "Kg",
+        "Material": "Ceramic",
+        pricing: {
+            productCost: 100,
+            packingCost: 40,
+            adCost: 30,
+            returnCost: 30,
+            marginCost: 99,
+        },
+    },
+
+    Mugs: {
+        "Generic Name": "Cups, Mugs & Saucers",
+        "Type": "Coffee Mug",
+        "Capacity": "250",
+        "Volume Unit": "ml",
+        "Net Weight (gms)": "800",
+        "Net Quantity (N)": "Pack Of 2",
+        "Packaging Breadth": "16",
+        "Packaging Height": "15",
+        "Packaging Length": "24",
+        "Packaging Unit": "Cm",
+        "Packaging Weight": "0.9",
+        "Packaging Weight Unit": "Kg",
+        "Product Breadth": "9",
+        "Product Height": "11",
+        "Product Length": "12",
+        "Product Unit": "Cm",
+        "Product Weight": "0.4",
+        "Product Weight Unit": "Kg",
+        "Material": "Ceramic",
+        pricing: {
+            productCost: 60,
+            packingCost: 30,
+            adCost: 30,
+            returnCost: 30,
+            marginCost: 99,
+        },
+    },
+
+    Plates: {
+        "Generic Name": "Plates",
+        "Diameter": "19cm",
+        "Dishware Feature": "Microwave Safer",
+        "Type": "Reusable",
+        "Net Weight (gms)": "800",
+        "Net Quantity (N)": "Pack Of 2",
+        "Packaging Breadth": "7",
+        "Packaging Height": "1",
+        "Packaging Length": "7",
+        "Packaging Unit": "Inch",
+        "Packaging Weight": "0.9",
+        "Packaging Weight Unit": "Kg",
+        "Product Breadth": "24",
+        "Product Height": "9",
+        "Product Length": "24",
+        "Product Unit": "Cm",
+        "Product Diameter": "24",
+        "Product Weight": "0.4",
+        "Product Weight Unit": "Kg",
+        "Material": "Ceramic",
+        pricing: {
+            productCost: 140,
+            packingCost: 40,
+            adCost: 30,
+            returnCost: 30,
+            marginCost: 99,
+        },
+    },
+
+    FourBowls: {
+        "Generic Name": "Bowls",
+        "Microwave Safe": "Yes",
+        "Type": "Reusable",
+        "Net Weight (gms)": "800",
+        "Add Ons": "No Add ons",
+        "Net Quantity (N)": "Pack Of 4",
+        "Packaging Breadth": "16",
+        "Packaging Height": "12",
+        "Packaging Length": "26",
+        "Packaging Unit": "Cm",
+        "Packaging Weight": "0.9",
+        "Packaging Weight Unit": "Kg",
+        "Product Breadth": "11",
+        "Product Height": "5",
+        "Product Length": "11",
+        "Product Unit": "Cm",
+        "Product Diameter": "11",
+        "Product Weight": "0.2",
+        "Product Weight Unit": "Kg",
+        "Material": "Ceramic",
+        pricing: {
+            productCost: 100,
+            packingCost: 40,
+            adCost: 30,
+            returnCost: 30,
+            marginCost: 99,
+        },
+    },
+
+    TwoBowls: {
+        "Generic Name": "Bowls",
+        "Microwave Safe": "Yes",
+        "Type": "Reusable",
+        "Net Weight (gms)": "400",
+        "Add Ons": "No Add ons",
+        "Net Quantity (N)": "Pack Of 2",
+        "Packaging Breadth": "15",
+        "Packaging Height": "13",
+        "Packaging Length": "16",
+        "Packaging Unit": "Cm",
+        "Packaging Weight": "0.5",
+        "Packaging Weight Unit": "Kg",
+        "Product Breadth": "11",
+        "Product Height": "5",
+        "Product Length": "11",
+        "Product Unit": "Cm",
+        "Product Diameter": "11",
+        "Product Weight": "0.2",
+        "Product Weight Unit": "Kg",
+        "Material": "Ceramic",
+        pricing: {
+            productCost: 50,
+            packingCost: 25,
+            adCost: 25,
+            returnCost: 25,
+            marginCost: 74,
+        },
+    },
+};
+
+export const supplierTemplates = {
+    Mishika: {
+        "Manufacturer Name": "M/S Mishika Enterprises",
+        "Manufacturer Address": "G.T Road Khurja",
+        "Manufacturer Pincode": "203131",
+        "Packer Name": "M/S Mishika Enterprises",
+        "Packer Address": "G.T Road Khurja",
+        "Packer Pincode": "203131",
+    },
+
+    Shivi: {
+        "Manufacturer Name": "M/S Shivi Ceramics",
+        "Manufacturer Address": "G.T Road Khurja",
+        "Manufacturer Pincode": "203131",
+        "Packer Name": "M/S Shivi Ceramics",
+        "Packer Address": "G.T Road Khurja",
+        "Packer Pincode": "203131",
+    },
+
+    Jayas: {
+        "Manufacturer Name": "M/S Jayas Traders",
+        "Manufacturer Address": "G.T Road Khurja",
+        "Manufacturer Pincode": "203131",
+        "Packer Name": "M/S Jayas Traders",
+        "Packer Address": "G.T Road Khurja",
+        "Packer Pincode": "203131",
+    },
+
+    "Khurja Crockery Store": {
+        "Manufacturer Name": "Khurja Crockery Store",
+        "Manufacturer Address":
+            "Quarter no. 5, Chauhan Pottery, Pottery Center Area, G.T Road Khurja",
+        "Manufacturer Pincode": "203131",
+        "Packer Name": "Khurja Crockery Store",
+        "Packer Address":
+            "Quarter no. 5, Chauhan Pottery, Pottery Center Area, G.T Road Khurja",
+        "Packer Pincode": "203131",
+    },
+};
+
+export function getAutoFillData(category, supplier) {
+    return {
+        ...commonDefaults,
+        ...(categoryTemplates[category] || {}),
+        ...(supplierTemplates[supplier] || {}),
+    };
+}
+
+export function getCategoryPricing(category) {
+    return (
+        categoryTemplates[category]?.pricing || {
+            productCost: 0,
+            packingCost: 0,
+            adCost: 0,
+            returnCost: 0,
+            marginCost: 0,
+        }
+    );
+}

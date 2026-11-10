@@ -1,4 +1,4 @@
-# Flip Lister - Meesho Listing Builder
+# Flip Lister - Flipkart Listing Builder
 
 A modern, fast React web application for building and managing product listings for the Meesho e-commerce platform. Import Excel templates, auto-populate fields, manage multiple listings, and export completed listings—all in one place.
 
